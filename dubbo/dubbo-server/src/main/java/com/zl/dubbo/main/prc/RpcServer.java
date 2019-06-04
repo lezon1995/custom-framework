@@ -1,6 +1,7 @@
 package com.zl.dubbo.main.prc;
 
 import com.zl.dubbo.main.annotation.RpcAnnotation;
+import com.zl.dubbo.main.handler.RpcServerHandler;
 import com.zl.dubbo.main.registry.IRegistryCenter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -10,6 +11,11 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,17 +75,17 @@ public class RpcServer {
                     //业务
                     ChannelPipeline pipeline = socketChannel.pipeline();
 
-//                    pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
-//                    pipeline.addLast(new LengthFieldPrepender(4));
-//                    pipeline.addLast("encoder", new ObjectEncoder());
-//                    pipeline.addLast("decoder", new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled()));
+                    pipeline.addLast("frameDecoder",new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+                    pipeline.addLast("frameEncoder",new LengthFieldPrepender(4));
+                    pipeline.addLast("encoder", new ObjectEncoder());
+                    pipeline.addLast("decoder", new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(getClass().getClassLoader())));
                     pipeline.addLast(new RpcServerHandler(serviceMap));
                 }
             }).option(ChannelOption.SO_BACKLOG, 128).childOption(ChannelOption.SO_KEEPALIVE, true);
             String[] addrs = serviceAddress.split(":");
             String ip = addrs[0];
             int port = Integer.parseInt(addrs[1]);
-            ChannelFuture future = bootstrap.bind(ip, port).sync();
+            ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("netty服务端启动成功,等待客户端连接...");
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {

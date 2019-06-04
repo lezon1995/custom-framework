@@ -1,4 +1,4 @@
-package com.zl.dubbo.main.prc;
+package com.zl.dubbo.main.handler;
 
 import com.zl.dubbo.main.bean.RpcRequest;
 import io.netty.channel.*;
@@ -16,6 +16,18 @@ public class RpcServerHandler extends ChannelHandlerAdapter {
     public RpcServerHandler(Map<String, Object> serviceMap) {
         this.serviceMap = serviceMap;
     }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println(ctx.channel().toString()+ "已经连接");
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println(ctx.channel().toString()+ "断开连接");
+    }
+
+
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

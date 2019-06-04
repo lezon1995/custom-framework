@@ -8,6 +8,11 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -21,6 +26,7 @@ import java.lang.reflect.Proxy;
 public class RpcClientProxy {
 
     private IServiceDiscovery serviceDiscovery;
+    private Bootstrap bootstrap;
 
     public RpcClientProxy(IServiceDiscovery serviceDiscovery) {
         this.serviceDiscovery = serviceDiscovery;
@@ -50,41 +56,41 @@ public class RpcClientProxy {
                         String[] split = serviceAddress.split(":");
                         String ip = split[0];
                         int port = Integer.parseInt(split[1]);
-                        Object o = initNettyClient(ip, port, request);
-                        return o;
+                        final RpcProxyHandler rpcProxyHandler = new RpcProxyHandler();
+                        EventLoopGroup group = new NioEventLoopGroup();
+                        try {
+                            //启动netty服务
+                            bootstrap = new Bootstrap();
+                            bootstrap.group(group)
+                                    .channel(NioSocketChannel.class)
+                                    .option(ChannelOption.TCP_NODELAY, true)
+                                    .handler(new ChannelInitializer<SocketChannel>() {
+                                        @Override
+                                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                                            //业务
+                                            ChannelPipeline pipeline = socketChannel.pipeline();
+
+                                            pipeline.addLast("frameDecoder",new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+                                            pipeline.addLast("frameEncoder",new LengthFieldPrepender(4));
+                                            pipeline.addLast("encoder", new ObjectEncoder());
+                                            pipeline.addLast("decoder", new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(getClass().getClassLoader())));
+                                            pipeline.addLast("handler",rpcProxyHandler);
+                                        }
+                                    });
+                            //连接netty server
+                            ChannelFuture future = bootstrap.connect(ip, port).sync();
+                            //将封装好的request对象写过去
+                            future.channel().writeAndFlush(request);
+                            future.channel().closeFuture().sync();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            group.shutdownGracefully();
+                        }
+                        return rpcProxyHandler.getResponse();
                     }
                 }));
         return instance;
     }
 
-
-    private Object initNettyClient(String ip, int port, RpcRequest request) {
-        final RpcProxyHandler rpcProxyHandler = new RpcProxyHandler();
-        EventLoopGroup group = new NioEventLoopGroup();
-        try {
-            //启动netty服务
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(group)
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY, true)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            //业务
-                            ChannelPipeline pipeline = socketChannel.pipeline();
-                            pipeline.addLast(rpcProxyHandler);
-                        }
-                    });
-            //连接netty server
-            ChannelFuture future = bootstrap.connect(ip, port).sync();
-            //将封装好的request对象写过去
-            future.channel().writeAndFlush(request);
-            future.channel().closeFuture().sync();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            group.shutdownGracefully();
-        }
-        return rpcProxyHandler.getResponse();
-    }
 }

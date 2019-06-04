@@ -32,22 +32,22 @@
 		<dependency>
 			<groupId>org.apache.curator</groupId>
 			<artifactId>curator-recipes</artifactId>
-			<version>4.2.0</version>
+			<version>3.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.curator</groupId>
 			<artifactId>curator-framework</artifactId>
-			<version>4.2.0</version>
+			<version>3.3.0</version>
 		</dependency>
         <!--zookeeper管理工具==============================-->
 
 		<!--Netty ==============================-->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>5.0.0.Alpha2</version>
-        </dependency>
-        <!--Netty ==============================-->
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>5.0.0.Alpha2</version>
+		</dependency>
+		<!--Netty ==============================-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
