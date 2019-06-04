@@ -14,7 +14,10 @@ public class RegistryCenterImpl implements IRegistryCenter {
 
     private CuratorFramework curatorFramework;
 
-    {
+
+    /**
+     * 每次初始化注册中心的时候 与zookeeper server建立连接
+     */ {
         curatorFramework = CuratorFrameworkFactory.builder()
                 .connectString(ZkProperties.CONNECTION_URL)
                 .sessionTimeoutMs(4000)
@@ -22,6 +25,12 @@ public class RegistryCenterImpl implements IRegistryCenter {
         curatorFramework.start();
     }
 
+    /**
+     * 注册服务到zookeper
+     *
+     * @param serviceName    服务名称
+     * @param serviceAddress 服务地址
+     */
     @Override
     public void register(String serviceName, String serviceAddress) {
         String servicePath = ZkProperties.REGISTRY_PATH + "/" + serviceName;
@@ -35,8 +44,8 @@ public class RegistryCenterImpl implements IRegistryCenter {
                         .forPath(servicePath, "0".getBytes());
             }
             //代码执行到这里肯定存在/registry/IHelloService
-            //服务发布的地址:127.0.0.1:8080
-            //address:/registry/IHelloService/127.0.0.1:8080
+            //假如服务发布的地址:127.0.0.1:8080
+            //那么zookeeper上注册的地址就是 /registry/IHelloService/127.0.0.1:8080
             String addressPath = servicePath + "/" + serviceAddress;
             String rsNode = curatorFramework.create()
                     .withMode(CreateMode.EPHEMERAL)

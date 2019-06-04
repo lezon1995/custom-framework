@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * 随机选取zookeeper服务节点
+ *
  * @author zhuliang
  * @date 2019/6/3 23:10
  */
 public class RandomLoadBalance implements ILoadBalance {
 
-    private Random random=new Random();
+    private Random random = new Random();
 
     @Override
     public String select(List<String> repos) {

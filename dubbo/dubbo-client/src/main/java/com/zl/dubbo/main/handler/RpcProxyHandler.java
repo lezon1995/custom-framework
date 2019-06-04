@@ -7,6 +7,9 @@ import io.netty.channel.*;
  * @date 2019/6/4 0:24
  */
 public class RpcProxyHandler extends ChannelHandlerAdapter {
+    /**
+     * 服务端返回的结果
+     */
     private Object response;
 
     public Object getResponse() {

@@ -7,9 +7,9 @@ import com.zl.dubbo.main.annotation.RpcAnnotation;
  * @date 2019/6/3 22:55
  */
 @RpcAnnotation(IHelloService.class)
-public class HelloServiceImpl implements IHelloService {
+public class HelloServiceImpl3 implements IHelloService {
     @Override
     public String sayHello(String msg) {
-        return "Hi I am " + msg;
+        return "大家好 我是 " + msg +" from "+getClass().getName();
     }
 }

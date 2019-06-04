@@ -32,8 +32,15 @@ public class RpcClientProxy {
         this.serviceDiscovery = serviceDiscovery;
     }
 
+    /**
+     * 根据接口的class对象返回接口的动态代理对象
+     *
+     * @param interfaceClass 被代理接口的class对象
+     * @param <T>
+     * @return 动态代理对象
+     */
     public <T> T create(final Class<T> interfaceClass) {
-        T instance= ((T) Proxy.newProxyInstance(
+        T instance = ((T) Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class[]{interfaceClass},
                 new InvocationHandler() {
@@ -56,6 +63,7 @@ public class RpcClientProxy {
                         String[] split = serviceAddress.split(":");
                         String ip = split[0];
                         int port = Integer.parseInt(split[1]);
+                        //netty 客户端 处理handler
                         final RpcProxyHandler rpcProxyHandler = new RpcProxyHandler();
                         EventLoopGroup group = new NioEventLoopGroup();
                         try {
@@ -69,18 +77,18 @@ public class RpcClientProxy {
                                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                                             //业务
                                             ChannelPipeline pipeline = socketChannel.pipeline();
-
-                                            pipeline.addLast("frameDecoder",new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
-                                            pipeline.addLast("frameEncoder",new LengthFieldPrepender(4));
+                                            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+                                            pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
                                             pipeline.addLast("encoder", new ObjectEncoder());
                                             pipeline.addLast("decoder", new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(getClass().getClassLoader())));
-                                            pipeline.addLast("handler",rpcProxyHandler);
+                                            pipeline.addLast("handler", rpcProxyHandler);
                                         }
                                     });
                             //连接netty server
                             ChannelFuture future = bootstrap.connect(ip, port).sync();
                             //将封装好的request对象写过去
                             future.channel().writeAndFlush(request);
+                            //客户端在这里阻塞 直到服务端返回结果
                             future.channel().closeFuture().sync();
                         } catch (Exception e) {
                             e.printStackTrace();
