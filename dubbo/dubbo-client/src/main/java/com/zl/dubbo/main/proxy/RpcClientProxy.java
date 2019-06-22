@@ -69,7 +69,8 @@ public class RpcClientProxy {
                         try {
                             //启动netty服务
                             bootstrap = new Bootstrap();
-                            bootstrap.group(group)
+                            bootstrap
+                                    .group(group)
                                     .channel(NioSocketChannel.class)
                                     .option(ChannelOption.TCP_NODELAY, true)
                                     .handler(new ChannelInitializer<SocketChannel>() {
