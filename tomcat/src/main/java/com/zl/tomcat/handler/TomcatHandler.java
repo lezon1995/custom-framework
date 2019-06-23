@@ -21,8 +21,8 @@ public class TomcatHandler extends ChannelHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        logger.info("监听到请求[{}]",msg);
         HttpRequest request = msg instanceof HttpRequest ? ((HttpRequest) msg) : null;
-
         MyHttpRequest req = new MyHttpRequest(ctx, request);
         MyHttpResponse res = new MyHttpResponse(ctx, request);
         new MyServlet().doGet(req, res);
@@ -30,6 +30,6 @@ public class TomcatHandler extends ChannelHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error(cause.getMessage());
+        super.exceptionCaught(ctx, cause);
     }
 }

@@ -16,6 +16,10 @@ public class MyServlet {
     }
 
     public void doPost(MyHttpRequest request, MyHttpResponse response) {
+        if (request.getRequest()==null){
+            response.write("");
+            return;
+        }
         response.write(request.getParameter("name"));
     }
 

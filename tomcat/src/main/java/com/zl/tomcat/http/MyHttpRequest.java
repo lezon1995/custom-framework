@@ -3,6 +3,7 @@ package com.zl.tomcat.http;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,19 @@ public class MyHttpRequest {
     }
 
     public String getParameter(String name) {
-        return getParameters().get(name).get(0);
+        List<String> strings = getParameters().get(name);
+        if (CollectionUtils.isEmpty(strings)) {
+            return null;
+        } else {
+            return strings.get(0);
+        }
     }
 
+    public ChannelHandlerContext getCtx() {
+        return ctx;
+    }
+
+    public HttpRequest getRequest() {
+        return request;
+    }
 }
