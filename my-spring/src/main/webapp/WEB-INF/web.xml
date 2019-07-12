@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="2.4"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+         http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+      
+    <!-- 配置Listener参数：告诉它Spring的配置文件位置，它好去创建容器 -->
+      
+    <servlet>
+        <servlet-name>MyDispatcherServlet</servlet-name>
+        <servlet-class>com.zl.spring.servlet.MyDispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:application.properties</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MyDispatcherServlet</servlet-name>
+        <!--用一个servlet拦截所有请求-->
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+
+
+
+
+</web-app>
